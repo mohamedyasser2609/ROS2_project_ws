@@ -11,7 +11,7 @@ slam_toolbox:
     mode: mapping
 
     use_sim_time: false
-
+    publish_tf: true
     resolution: 0.05
 
     max_laser_range: 12.0
