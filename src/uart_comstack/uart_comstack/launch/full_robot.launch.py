@@ -57,12 +57,12 @@ def generate_launch_description():
         ),
 
         # ================= GPS =================
-        Node(
-            package='uart_comstack',
-            executable='gps_node',
-            name='gps_node',
-            output='screen'
-        ),
+    #    Node(
+    #        package='uart_comstack',
+    #        executable='gps_node',
+    #        name='gps_node',
+    #        output='screen'
+    #    ),
 
         # ================= RAW ODOM =================
         Node(

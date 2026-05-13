@@ -42,8 +42,8 @@ class OdometryNode(Node):
         # Robot parameters
         # ==========================
         self.ticks_per_rev = 2048
-        self.wheel_radius = 0.05
-        self.wheel_base = 0.30
+        self.wheel_radius = 0.065
+        self.wheel_base = 0.50
 
         # ⚠️ IMPORTANT: غيري ده لو الاتجاه غلط
         self.reverse_direction = False
