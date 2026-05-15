@@ -21,6 +21,13 @@ def generate_launch_description():
         'ekf.yaml'
     )
     
+    # Get the uart_comstack package directory and SLAM config
+    slam_config = os.path.join(
+        get_package_share_directory('uart_comstack'),
+        'config',
+        'mapper_params_online_async.yaml'
+    )
+    
     # Process the URDF file
     robot_description = Command(['xacro ', urdf_file])
     
@@ -68,10 +75,45 @@ def generate_launch_description():
         parameters=[ekf_config]
     )
     
+    # ================= SLAM TOOLBOX =================
+    slam_toolbox = Node(
+        package='slam_toolbox',
+        executable='async_slam_toolbox_node',
+        name='slam_toolbox',
+        output='screen',
+        parameters=[
+            slam_config,
+            {
+                'use_sim_time': False,
+                'base_frame': 'base_link',
+                'odom_frame': 'odom',
+                'map_frame': 'map',
+                'odom_topic': '/odometry/filtered',
+                'publish_tf': True
+            }
+        ]
+    )
+    
+    # ================= STATIC TRANSFORM PUBLISHER =================
+    base_to_laser = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='base_to_laser',
+        output='screen',
+        arguments=[
+            '0', '0', '0.1',
+            '0', '0', '0',
+            'base_link',
+            'laser'
+        ]
+    )
+    
     return LaunchDescription([
         robot_state_publisher,
         gazebo_server,
         gazebo_client,
         spawn_entity,
         local_ekf,
+        slam_toolbox,
+        base_to_laser,
     ])
