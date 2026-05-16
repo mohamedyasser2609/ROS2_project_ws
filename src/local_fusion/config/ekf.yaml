@@ -1,6 +1,9 @@
 local_ekf:
   ros__parameters:
-    use_sim_time: false
+
+    #Gouda: I changed this to true to use the simulation time of Gazebo.
+    use_sim_time: true
+
     frequency: 15.0
     two_d_mode: true
 
@@ -37,6 +40,10 @@ local_ekf:
     # =========================
     odom_frame: odom
     base_link_frame: base_link
+
+
+    #Gouda: I suspect this should be map, but I will test it with odom first to see if it works.
     world_frame: odom
+
 
     publish_tf: true

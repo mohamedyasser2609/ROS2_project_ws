@@ -3,6 +3,8 @@ global_ekf:
 
     frequency: 15.0
     two_d_mode: true
+
+    # Gouda: That's a possible contradiction. Check it later.
     publish_tf: false
 
     # =====================
@@ -31,6 +33,7 @@ global_ekf:
 
     # =====================
     # GPS (NEW 🔥)
+    #Gouda: Yeah! The project is on fire.
     # =====================
     gps0: /odometry/gps   
     gps0_config: [true, true, false,
