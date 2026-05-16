@@ -10,7 +10,9 @@ slam_toolbox:
 
     mode: mapping
 
-    use_sim_time: false
+    #Gouda: I changed this to true to use the simulation time of Gazebo.
+    use_sim_time: true
+    
     publish_tf: true
     resolution: 0.05
 
@@ -27,10 +29,10 @@ slam_toolbox:
     # =========================
     # Scan handling
     # =========================
-    minimum_time_interval: 0.1
-    scan_buffer_size: 30
-    max_laser_queue_size: 200
-    map_update_interval: 0.5
+    minimum_time_interval: 0.5
+    scan_buffer_size: 100
+    max_laser_queue_size: 500
+    map_update_interval: 1.0
 
     use_scan_matching: true
     use_scan_barycenter: true

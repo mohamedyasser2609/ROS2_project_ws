@@ -1,7 +1,8 @@
 import os
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess
-from launch_ros.actions import Node
+from launch.actions import ExecuteProcess, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node, SetParameter
 from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import Command
@@ -12,6 +13,8 @@ def generate_launch_description():
     # Get the package directory
     pkg_share = FindPackageShare(package='tankette_description').find('tankette_description')
     urdf_file = os.path.join(pkg_share, 'urdf', 'tankette.urdf')
+
+    global_sim_time = SetParameter(name='use_sim_time', value=True)
     
     # Get the local_fusion package directory and EKF config
     local_fusion_dir = get_package_share_directory('local_fusion')
@@ -27,6 +30,20 @@ def generate_launch_description():
         'config',
         'mapper_params_online_async.yaml'
     )
+
+    # Get nav2 config
+    nav2_config = os.path.join(
+        get_package_share_directory('nav2_config'),
+        'config',
+        'nav2_params.yaml'
+    )
+
+    # Locate twist_mux config file
+    twist_mux_yaml = os.path.join(
+        get_package_share_directory('nav2_config'),
+        'config',
+        'twist_mux.yaml'
+    )
     
     # Process the URDF file
     robot_description = Command(['xacro ', urdf_file])
@@ -35,7 +52,10 @@ def generate_launch_description():
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        parameters=[{'robot_description': robot_description}],
+        parameters=[
+            {'robot_description': robot_description},
+            {'use_sim_time': True}
+        ],
         output='screen'
     )
     
@@ -84,7 +104,7 @@ def generate_launch_description():
         parameters=[
             slam_config,
             {
-                'use_sim_time': False,
+                'use_sim_time': True,
                 'base_frame': 'base_link',
                 'odom_frame': 'odom',
                 'map_frame': 'map',
@@ -94,6 +114,33 @@ def generate_launch_description():
         ]
     )
     
+    # ================= NAV2 =================
+    nav2_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('nav2_config'),
+                'launch',
+                'navigation_launch.py'
+            )
+        ),
+        launch_arguments={
+            'use_sim_time': 'true',
+            'params_file': nav2_config
+        }.items()
+    )
+
+    # ================= TWIST MUX NODE ================
+    twist_mux_node = Node(
+        package='twist_mux',
+        executable='twist_mux',
+        name='twist_mux',
+        output='screen',
+        parameters=[twist_mux_yaml],
+        remappings=[
+            ('/cmd_vel_out', '/cmd_vel')
+        ]
+    )
+
     # ================= STATIC TRANSFORM PUBLISHER =================
     base_to_laser = Node(
         package='tf2_ros',
@@ -105,15 +152,20 @@ def generate_launch_description():
             '0', '0', '0',
             'base_link',
             'laser'
-        ]
+        ],
+        parameters=[{'use_sim_time': True}]
     )
     
     return LaunchDescription([
+        global_sim_time,
         robot_state_publisher,
         gazebo_server,
         gazebo_client,
         spawn_entity,
         local_ekf,
+        #base_to_laser,
         slam_toolbox,
-        base_to_laser,
+        nav2_launch,
+        twist_mux_node,
+        
     ])
